@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: telegram-bot-heladas-madrid
+    env: python
+    region: ohio             # ← más cerca de Colombia
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot/telegram_bot.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
