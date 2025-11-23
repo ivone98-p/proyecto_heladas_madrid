@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 python-3.11.9
+=======
+python-3.11.9
+
+>>>>>>> 961eeb4 (fix: Agregar runtime.txt con Python 3.11.9)
