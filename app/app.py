@@ -30,6 +30,32 @@ st.set_page_config(
 st.title("❄️ Sistema de Alerta de Heladas - Madrid, Cundinamarca")
 
 # ============================================================
+# BOTÓN DE TELEGRAM
+# ============================================================
+st.markdown("""
+    <div style="text-align: center; margin: 20px 0;">
+        <a href="https://t.me/MadridHeladasBot" target="_blank" style="text-decoration: none;">
+            <button style="
+                background: linear-gradient(90deg, #0088cc 0%, #229ED9 100%);
+                color: white;
+                padding: 15px 40px;
+                border: none;
+                border-radius: 30px;
+                font-size: 18px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🔔 Activar Alertas de Telegram
+            </button>
+        </a>
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# ============================================================
 # IMPORTAR PREDICTOR
 # ============================================================
 try:
