@@ -4,9 +4,21 @@ Integrado con el predictor de Machine Learning
 """
 
 import logging
-from datetime import datetime
 import sys
-sys.path.append('../app')
+from pathlib import Path
+from datetime import datetime
+
+# ============================================================
+# CONFIGURAR PATH PARA IMPORTAR PREDICTOR
+# ============================================================
+# Agregar carpeta app/ al path de Python
+current_dir = Path(__file__).parent  # Carpeta bot/
+parent_dir = current_dir.parent       # Carpeta raíz
+app_dir = parent_dir / 'app'          # Carpeta app/
+
+sys.path.insert(0, str(app_dir))
+
+# Ahora sí podemos importar
 from predictor import PredictorHeladas
 from config import UMBRALES
 
