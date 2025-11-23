@@ -221,3 +221,12 @@ rutas.py
 
 # Archivos temporales de reorganización
 reorganizar_proyecto_backup/
+
+.vscode/extensions/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.env
+.venv
+venv/
