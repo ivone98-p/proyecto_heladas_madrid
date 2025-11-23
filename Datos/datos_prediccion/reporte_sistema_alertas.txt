@@ -1,0 +1,38 @@
+================================================================================
+REPORTE SISTEMA DE ALERTAS TEMPRANAS DE HELADAS - MADRID
+================================================================================
+
+Fecha de generación: 2025-11-19 19:24:15.751225
+Ubicación: Madrid, Cundinamarca
+Horizonte de predicción: 1 día
+
+MODELO DE REGRESIÓN SELECCIONADO:
+  - Modelo: Ridge
+  - R² Test: 0.4085
+  - RMSE: 2.1076°C
+  - MAE: 1.6762°C
+
+CLASIFICADOR DE HELADAS SELECCIONADO:
+  - Modelo: Logistic Regression
+  - Accuracy: 0.9557
+  - Precision: 0.1739
+  - Recall: 0.9091
+  - F1 Score: 0.2920
+
+DESEMPEÑO:
+  - Heladas detectadas: 20/22
+  - Tasa de detección: 90.9%
+  - Falsas alarmas: 95
+  - Tasa de falsas alarmas: 4.4%
+
+TOP 10 FEATURES MÁS IMPORTANTES:
+  33. TMIN_diff_1: 0.1996
+  10. TMIN_lag_1: 0.1502
+  17. TMIN_ma_3: 0.0998
+  34. TMIN_diff_7: 0.0309
+  25. TMIN_ma_14: 0.0277
+  9. DíaAño_cos: 0.0269
+  19. TMIN_min_3: 0.0256
+  29. TMIN_ma_30: 0.0252
+  1. Año: 0.0229
+  21. TMIN_ma_7: 0.0228

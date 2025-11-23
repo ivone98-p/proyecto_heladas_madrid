@@ -1,0 +1,223 @@
+# ============================================================
+# ARCHIVOS SENSIBLES - NUNCA SUBIR
+# ============================================================
+
+# Variables de entorno con token de Telegram
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Base de datos con información de usuarios
+*.db
+*.sqlite
+*.sqlite3
+suscriptores.db
+test_*.db
+
+# ============================================================
+# LOGS Y ARCHIVOS TEMPORALES
+# ============================================================
+
+# Logs del sistema de alertas
+logs_alertas.txt
+*.log
+
+# Archivos temporales de Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.Python
+
+# ============================================================
+# ENTORNOS VIRTUALES
+# ============================================================
+
+venv/
+env/
+ENV/
+.venv
+virtualenv/
+.python-version
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================================================
+# JUPYTER NOTEBOOKS
+# ============================================================
+
+# Checkpoints de Jupyter
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Archivos temporales de notebooks
+*.ipynb_checkpoints
+
+# ============================================================
+# ARCHIVOS DEL SISTEMA OPERATIVO
+# ============================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================================
+# IDEs Y EDITORES
+# ============================================================
+
+# VSCode
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+*~
+.netrwhist
+
+# Visual Studio
+.vs/
+
+# ============================================================
+# STREAMLIT
+# ============================================================
+
+.streamlit/
+.streamlit/secrets.toml
+
+# ============================================================
+# DATOS PESADOS (OPCIONAL)
+# ============================================================
+
+Datos/datos_consolidados/*.csv
+Datos/datos_crudos/*.csv
+Datos/datos_imputados/validacion_cruzada_plot_INTEGRAL_v1.png
+Datos/datos_imputados/validacion_cruzada_reporte_INTEGRAL_v1.csv
+
+
+# IMPORTANTE: Los archivos en datos_imputados/ y modelos_entrenados/ 
+# SÍ deben subirse porque son necesarios para producción
+
+# ============================================================
+# ARCHIVOS DE TESTING
+# ============================================================
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+pytest_debug.log
+
+# ============================================================
+# MYPY
+# ============================================================
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================================
+# OTROS
+# ============================================================
+
+# Archivos de backup
+*.bak
+*.backup
+*.swp
+*.swo
+*~
+
+# Archivos de configuración local
+config.local.py
+settings.local.py
+
+# Node modules (si usas algo de JavaScript/npm)
+node_modules/
+
+# Archivos compilados
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Archivos de distribución
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Certificados y keys
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# ============================================================
+# ESPECÍFICO DEL PROYECTO
+# ============================================================
+
+# Archivo de rutas (puede tener paths locales)
+rutas.py
+
+# Archivos temporales de reorganización
+reorganizar_proyecto_backup/
