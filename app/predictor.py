@@ -14,15 +14,21 @@ class PredictorHeladas:
     Con capacidad de simular datos faltantes hasta hoy
     """
     
-    def __init__(self, data_path='../Datos'):
+    def __init__(self, data_path=None):
         """
         Inicializa el predictor cargando modelos y datos
         
         Args:
-            data_path: Ruta base de datos (por defecto 'Datos')
+            data_path: Ruta base de datos (None = busca automáticamente)
         """
-        # Configurar rutas base
-        self.base_dir = Path(data_path)
+        # Si no se especifica, buscar Datos/ desde la raíz del proyecto
+        if data_path is None:
+            current_file = Path(__file__).resolve()
+            project_root = current_file.parent.parent  # Desde app/ subir a raíz
+            self.base_dir = project_root / 'Datos'
+        else:
+            self.base_dir = Path(data_path)
+        
         self.modelos_dir = self.base_dir / 'modelos_entrenados'
         self.datos_dir = self.base_dir / 'datos_imputados'
         
