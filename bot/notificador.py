@@ -12,14 +12,20 @@ from datetime import datetime
 # CONFIGURAR PATH PARA IMPORTAR PREDICTOR
 # ============================================================
 # Agregar carpeta app/ al path de Python
-current_dir = Path(__file__).parent  # Carpeta bot/
-parent_dir = current_dir.parent       # Carpeta raíz
-app_dir = parent_dir / 'app'          # Carpeta app/
+current_dir = Path(__file__).resolve().parent  # Carpeta bot/
+parent_dir = current_dir.parent                 # Carpeta raíz
+app_dir = parent_dir / 'app'                    # Carpeta app/
 
-sys.path.insert(0, str(app_dir))
+# Solo agregar si no está ya en el path
+if str(app_dir) not in sys.path:
+    sys.path.insert(0, str(app_dir))
 
 # Ahora sí podemos importar
-from predictor import PredictorHeladas
+try:
+    from predictor import PredictorHeladas
+except ImportError as e:
+    raise ImportError(f"No se pudo importar predictor desde {app_dir}: {e}")
+
 from config import UMBRALES
 
 logger = logging.getLogger(__name__)
@@ -121,45 +127,6 @@ class NotificadorHeladas:
 🔎 **Nivel de riesgo**: {riesgo}
 """
         
-        # Recomendaciones según nivel de riesgo
-        if temp <= -2:
-            mensaje += """
-⚠️ **RIESGO MUY ALTO**
-
-**Recomendaciones urgentes:**
-🔥 Proteger cultivos con coberturas térmicas
-💧 Riego preventivo antes del anochecer
-🌱 Proteger plántulas y cultivos sensibles
-👨‍🌾 Estar alerta durante toda la noche
-"""
-        elif temp <= 0:
-            mensaje += """
-⚠️ **RIESGO ALTO**
-
-**Recomendaciones:**
-🔥 Implementar protección en cultivos
-💧 Considerar riego preventivo
-🌱 Proteger plantas más sensibles
-👨‍🌾 Monitorear condiciones durante la noche
-"""
-        elif temp <= 2:
-            mensaje += """
-⚡ **PRECAUCIÓN**
-
-**Recomendaciones:**
-👀 Estar atento a cambios de temperatura
-🌱 Considerar protección para cultivos sensibles
-📱 Mantenerse informado
-"""
-        
-        mensaje += f"""
-📊 **Datos adicionales:**
-• Temperatura ayer: {prediccion['temp_ayer']:.1f}°C
-• Cambio esperado: {prediccion['cambio_esperado']:+.1f}°C
-• Promedio 7 días: {prediccion['temp_promedio_7d']:.1f}°C
-
-🌾 Mantente informado y protege tus cultivos.
-"""
         
         return mensaje
     
@@ -204,11 +171,7 @@ class NotificadorHeladas:
 ❄️ **Probabilidad de helada**: {prob:.1f}%
 🔎 **Nivel de riesgo**: {riesgo}
 
-📊 **Contexto:**
-• Temperatura ayer: {prediccion['temp_ayer']:.1f}°C
-• Promedio 7 días: {prediccion['temp_promedio_7d']:.1f}°C
-• Mínima 7 días: {prediccion['temp_minima_7d']:.1f}°C
-• Cambio esperado: {prediccion['cambio_esperado']:+.1f}°C
+
 
 🕐 Actualizado: {datetime.now().strftime('%H:%M:%S')}
 """
