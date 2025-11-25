@@ -32,7 +32,7 @@ class NotificadorHeladas:
     Integrado con el sistema de predicción ML multi-estación
     """
    
-    def __init__(self, estacion_default="21205790"):
+    def __init__(self, estacion_default="21205880"):
         """
         Inicializa el notificador y el predictor
         
