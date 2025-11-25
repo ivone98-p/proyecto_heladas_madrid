@@ -220,7 +220,7 @@ class NotificadorHeladas:
         mensaje = f"""
 {emoji} Predicción de Heladas para Madrid, Cundinamarca
 📅 Mañana: {fecha_texto}
-🌡️ Temperatura predicha: {temp:.1f}°C
+🌡️ Temperatura Mínima predicha: {temp:.1f}°C
 ❄️ Probabilidad de helada: {prob:.1f}%
 🔎 Nivel de riesgo: {riesgo}
 
