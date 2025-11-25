@@ -61,25 +61,38 @@ class NotificadorHeladas:
             # Obtener predicción multi-estación
             resultado_multi = self.predictor.predecir()
             
+            # DEBUG: Ver qué devuelve
+            print(f"\n🔍 DEBUG: Keys en resultado_multi: {resultado_multi.keys()}")
+            
             if "error" in resultado_multi:
+                print(f"❌ DEBUG: Error en resultado: {resultado_multi['error']}")
                 return {"error": resultado_multi["error"]}
             
             # Buscar predicción de la estación default
             predicciones = resultado_multi.get("predicciones_estaciones", [])
             
+            print(f"🔍 DEBUG: Número de predicciones: {len(predicciones)}")
+            if predicciones:
+                print(f"🔍 DEBUG: Códigos disponibles: {[p['codigo'] for p in predicciones]}")
+                print(f"🔍 DEBUG: Buscando código: {self.estacion_default}")
+            
             if not predicciones:
+                print("❌ DEBUG: Lista de predicciones vacía")
                 return {"error": "No hay predicciones disponibles"}
             
             # Buscar la estación específica
             pred_estacion = None
             for pred in predicciones:
+                print(f"🔍 DEBUG: Comparando '{pred['codigo']}' con '{self.estacion_default}'")
                 if pred["codigo"] == self.estacion_default:
                     pred_estacion = pred
+                    print(f"✅ DEBUG: Estación encontrada!")
                     break
             
             # Si no se encuentra, usar la primera disponible
             if pred_estacion is None:
                 pred_estacion = predicciones[0]
+                print(f"⚠️ DEBUG: Estación {self.estacion_default} no encontrada, usando {pred_estacion['codigo']}")
                 logger.warning(f"Estación {self.estacion_default} no encontrada, usando {pred_estacion['codigo']}")
             
             # Formatear respuesta compatible con el formato anterior
