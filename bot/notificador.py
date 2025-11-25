@@ -149,7 +149,6 @@ class NotificadorHeladas:
         riesgo = prediccion['riesgo']
         emoji = prediccion['emoji_riesgo']
         fecha = prediccion['fecha_prediccion']
-        estacion = prediccion.get('estacion_nombre', 'Madrid, Cundinamarca')
        
         # Convertir fecha a texto legible
         meses_es = {
@@ -172,7 +171,7 @@ class NotificadorHeladas:
        
         mensaje = f"""
 {emoji} **ALERTA DE HELADA**
-📍 **Estación**: {estacion}
+📍 **Madrid, Cundinamarca**
 📅 **Fecha**: {fecha_texto}
 🌡️ **Temperatura predicha**: {temp:.1f}°C
 ❄️ **Probabilidad de helada**: {prob:.1f}%
@@ -199,7 +198,6 @@ class NotificadorHeladas:
         riesgo = prediccion['riesgo']
         emoji = prediccion['emoji_riesgo']
         fecha = prediccion['fecha_prediccion']
-        estacion = prediccion.get('estacion_nombre', 'Madrid, Cundinamarca')
        
         # Convertir fecha
         meses_es = {
@@ -220,12 +218,11 @@ class NotificadorHeladas:
         fecha_texto = f"{dia} de {mes} de {anio}"
        
         mensaje = f"""
-{emoji} **Predicción de Heladas**
-📍 **Estación**: {estacion}
-📅 **Fecha**: {fecha_texto}
-🌡️ **Temperatura predicha**: {temp:.1f}°C
-❄️ **Probabilidad de helada**: {prob:.1f}%
-🔎 **Nivel de riesgo**: {riesgo}
+{emoji} Predicción de Heladas para Madrid, Cundinamarca
+📅 Mañana: {fecha_texto}
+🌡️ Temperatura predicha: {temp:.1f}°C
+❄️ Probabilidad de helada: {prob:.1f}%
+🔎 Nivel de riesgo: {riesgo}
 
 🕐 Actualizado: {datetime.now().strftime('%H:%M:%S')}
 """
