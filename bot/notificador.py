@@ -4,144 +4,99 @@ Integrado con el predictor de Machine Learning
 """
 
 import logging
-import sys
-from pathlib import Path
 from datetime import datetime
 
 # ============================================================
-# CONFIGURAR PATH PARA IMPORTAR PREDICTOR
+# IMPORT CORREGIDO PARA QUE FUNCIONE EN TODAS LAS PLATAFORMAS
 # ============================================================
-# Agregar carpeta app/ al path de Python
-current_dir = Path(__file__).resolve().parent  # Carpeta bot/
-parent_dir = current_dir.parent                 # Carpeta raíz
-app_dir = parent_dir / 'app'                    # Carpeta app/
-
-# Solo agregar si no está ya en el path
-if str(app_dir) not in sys.path:
-    sys.path.insert(0, str(app_dir))
-
-# Ahora sí podemos importar
 try:
-    from predictor import PredictorHeladas
+    # Esta es la línea mágica que funciona en Railway, Render, local, etc.
+    from app.predictor import PredictorHeladas
 except ImportError as e:
-    raise ImportError(f"No se pudo importar predictor desde {app_dir}: {e}")
+    # Mensaje claro para saber qué pasó
+    raise ImportError(
+        "No se pudo importar PredictorHeladas. "
+        "Verifica que el archivo predictor.py esté dentro de la carpeta 'app/'. "
+        f"Error original: {e}"
+    )
 
 from config import UMBRALES
 
+# Configuración básica de logs
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class NotificadorHeladas:
     """
     Clase que gestiona las notificaciones de heladas
-    Integrado con el sistema de predicción ML
     """
     
     def __init__(self):
         """Inicializa el notificador y el predictor"""
         try:
             self.predictor = PredictorHeladas()
-            logger.info("✅ Predictor de heladas inicializado")
+            logger.info("Predictor de heladas inicializado correctamente")
         except Exception as e:
-            logger.error(f"❌ Error al inicializar predictor: {e}")
+            logger.error(f"Error al inicializar predictor: {e}")
             self.predictor = None
     
     def obtener_prediccion_actual(self):
-        """
-        Obtiene la predicción actual de heladas
-        
-        Returns:
-            dict: Predicción con temperatura, probabilidad, riesgo, etc.
-        """
+        """Obtiene la predicción más reciente"""
         if self.predictor is None:
             return {"error": "Predictor no disponible"}
         
         try:
-            resultado = self.predictor.predecir()
-            return resultado
+            return self.predictor.predecir()
         except Exception as e:
-            logger.error(f"❌ Error al obtener predicción: {e}")
+            logger.error(f"Error al obtener predicción: {e}")
             return {"error": str(e)}
     
     def necesita_enviar_alerta(self, prediccion):
-        """
-        Determina si se debe enviar una alerta según la predicción
-        
-        Args:
-            prediccion: dict con datos de predicción
-            
-        Returns:
-            tuple: (debe_enviar: bool, nivel_alerta: str)
-        """
+        """Determina si hay que mandar alerta"""
         if "error" in prediccion:
             return False, None
         
         temp = prediccion['temperatura_predicha']
         
-        # Enviar alerta solo si:
-        # - Temperatura <= 0°C (ALTO)
-        # - Temperatura <= 2°C (MEDIO)
-        
-        if temp <= UMBRALES['alto']:  # <= 0°C
+        if temp <= UMBRALES['alto']:      # ≤ 0°C → ALTO
             return True, "ALTO"
-        elif temp <= UMBRALES['medio']:  # <= 2°C
+        elif temp <= UMBRALES['medio']:   # ≤ 2°C → MEDIO
             return True, "MEDIO"
         else:
             return False, None
     
     def formatear_mensaje_alerta(self, prediccion):
-        """
-        Formatea el mensaje de alerta para Telegram
-        
-        Args:
-            prediccion: dict con datos de predicción
-            
-        Returns:
-            str: mensaje formateado para enviar
-        """
+        """Mensaje grande para alertas automáticas"""
         temp = prediccion['temperatura_predicha']
         prob = prediccion['probabilidad_helada']
         riesgo = prediccion['riesgo']
         emoji = prediccion['emoji_riesgo']
         fecha = prediccion['fecha_prediccion']
         
-        # Convertir fecha a texto legible
-        meses_es = {
-            1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
-            5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
-            9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
-        }
+        meses = {1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+                 5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+                 9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'}
         
-        dia = fecha.day
-        mes = meses_es[fecha.month]
-        anio = fecha.year
-        fecha_texto = f"{dia} de {mes} de {anio}"
+        fecha_texto = f"{fecha.day} de {meses[fecha.month]} de {fecha.year}"
         
-        # Mensaje base
-        mensaje = f"""
-{emoji} **ALERTA DE HELADA - Madrid, Cundinamarca**
+        return f"""
+{emoji} **¡ALERTA DE HELADA!** {emoji}
 
-📅 **Fecha**: {fecha_texto}
-🌡️ **Temperatura predicha**: {temp:.1f}°C
-❄️ **Probabilidad de helada**: {prob:.1f}%
-🔎 **Nivel de riesgo**: {riesgo}
+**Madrid, Cundinamarca**
+
+**Fecha**: {fecha_texto}
+**Temperatura mínima prevista**: **{temp:.1f}°C**
+**Probabilidad de helada**: {prob:.1f}%
+**Nivel de riesgo**: **{riesgo}**
+
+Protege tus cultivos esta noche
 """
-        
-        
-        return mensaje
-    
+
     def formatear_mensaje_prediccion(self, prediccion):
-        """
-        Formatea el mensaje de predicción para comando /prediccion
-        
-        Args:
-            prediccion: dict con datos de predicción
-            
-        Returns:
-            str: mensaje formateado
-        """
+        """Mensaje para el comando /prediccion"""
         if "error" in prediccion:
-            return f"❌ Error: {prediccion['error']}"
+            return f"Error: {prediccion['error']}"
         
         temp = prediccion['temperatura_predicha']
         prob = prediccion['probabilidad_helada']
@@ -149,93 +104,40 @@ class NotificadorHeladas:
         emoji = prediccion['emoji_riesgo']
         fecha = prediccion['fecha_prediccion']
         
-        # Convertir fecha
-        meses_es = {
-            1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
-            5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
-            9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
-        }
+        meses = {1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+                 5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+                 9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'}
         
-        dia = fecha.day
-        mes = meses_es[fecha.month]
-        anio = fecha.year
-        fecha_texto = f"{dia} de {mes} de {anio}"
+        fecha_texto = f"{fecha.day} de {meses[fecha.month]} de {fecha.year}"
         
-        mensaje = f"""
+        return f"""
 {emoji} **Predicción de Heladas**
 
-📍 Madrid, Cundinamarca
-📅 **Fecha**: {fecha_texto}
+**Madrid, Cundinamarca**  
+**Fecha**: {fecha_texto}
 
-🌡️ **Temperatura predicha**: {temp:.1f}°C
-❄️ **Probabilidad de helada**: {prob:.1f}%
-🔎 **Nivel de riesgo**: {riesgo}
+**Temperatura mínima**: **{temp:.1f}°C**  
+**Probabilidad de helada**: {prob:.1f}%  
+**Nivel de riesgo**: {riesgo}
 
-
-
-🕐 Actualizado: {datetime.now().strftime('%H:%M:%S')}
+Actualizado: {datetime.now().strftime('%H:%M:%S')}
 """
-        
-        return mensaje
-    
+
     def generar_resumen_diario(self, prediccion):
-        """
-        Genera un resumen breve para logs o reportes
-        
-        Args:
-            prediccion: dict con datos de predicción
-            
-        Returns:
-            str: resumen breve
-        """
+        """Resumen corto para logs"""
         if "error" in prediccion:
-            return f"Error en predicción: {prediccion['error']}"
-        
-        temp = prediccion['temperatura_predicha']
-        riesgo = prediccion['riesgo']
-        fecha = prediccion['fecha_prediccion']
-        
-        return f"{fecha} | Temp: {temp:.1f}°C | Riesgo: {riesgo}"
+            return f"Error: {prediccion['error']}"
+        return f"{prediccion['fecha_prediccion']} | {prediccion['temperatura_predicha']:.1f}°C | {prediccion['riesgo']}"
 
 
 # ============================================================
-# FUNCIONES AUXILIARES
+# PRUEBA LOCAL
 # ============================================================
-
 def probar_notificador():
-    """Función de prueba del notificador"""
-    print("🧪 Probando notificador...")
-    
-    notificador = NotificadorHeladas()
-    
-    if notificador.predictor is None:
-        print("❌ Predictor no disponible")
-        return
-    
-    print("✅ Obteniendo predicción...")
-    prediccion = notificador.obtener_prediccion_actual()
-    
-    if "error" in prediccion:
-        print(f"❌ Error: {prediccion['error']}")
-        return
-    
-    print(f"✅ Temperatura predicha: {prediccion['temperatura_predicha']:.1f}°C")
-    print(f"✅ Riesgo: {prediccion['riesgo']}")
-    
-    debe_alertar, nivel = notificador.necesita_enviar_alerta(prediccion)
-    print(f"✅ ¿Enviar alerta? {debe_alertar} (Nivel: {nivel})")
-    
-    if debe_alertar:
-        mensaje = notificador.formatear_mensaje_alerta(prediccion)
-        print("\n📧 Mensaje de alerta:")
-        print(mensaje)
-    
-    print("\n✅ Prueba completada")
-
+    print("Probando notificador...")
+    n = NotificadorHeladas()
+    pred = n.obtener_prediccion_actual()
+    print(n.formatear_mensaje_prediccion(pred))
 
 if __name__ == "__main__":
-    # Configurar logging para pruebas
-    logging.basicConfig(level=logging.INFO)
-    
-    # Ejecutar prueba
     probar_notificador()
