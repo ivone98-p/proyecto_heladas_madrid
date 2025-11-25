@@ -19,7 +19,7 @@ sys.path.insert(0, str(parent_dir))
 
 # Importar predictor desde app/
 try:
-    from predictor import PredictorHeladas
+    from predictor_multiestacion import PredictorHeladasMulti
 except ImportError as e:
     raise ImportError(f"No se pudo importar predictor desde {parent_dir}: {e}")
 
@@ -37,7 +37,7 @@ class NotificadorHeladas:
     def __init__(self):
         """Inicializa el notificador y el predictor"""
         try:
-            self.predictor = PredictorHeladas()
+            self.predictor = PredictorHeladasMulti()
             logger.info("✅ Predictor de heladas inicializado")
         except Exception as e:
             logger.error(f"❌ Error al inicializar predictor: {e}")
