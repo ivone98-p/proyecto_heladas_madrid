@@ -19,7 +19,7 @@ sys.path.insert(0, str(parent_dir))
 
 # Importar predictor desde app/
 try:
-    from predictor_multiestacion import PredictorHeladasMulti
+    from app.predictor_multiestacion import PredictorHeladasMulti
 except ImportError as e:
     raise ImportError(f"No se pudo importar predictor desde {parent_dir}: {e}")
 
