@@ -185,7 +185,7 @@ with col_metricas:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("🌡️ Temperatura Predicha", f"{temp_predicha:.1f}°C")
+        st.metric("🌡️ Temperatura Mínima Predicha", f"{temp_predicha:.1f}°C")
 
     with col2:
         st.metric("❄️ Probabilidad Helada", f"{prob_helada:.1f}%")
