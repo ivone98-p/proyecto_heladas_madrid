@@ -9,12 +9,10 @@ from pathlib import Path
 from datetime import datetime
 
 # ============================================================
-# CONFIGURAR PATH PARA IMPORTAR PREDICTOR (FUNCIONA EN RAILWAY)
+# CONFIGURAR PATH PARA IMPORTAR PREDICTOR
 # ============================================================
-current_dir = Path(__file__).resolve().parent  # Carpeta bot/
-parent_dir = current_dir.parent  # Carpeta raíz del proyecto
-
-# Añadir la raíz del proyecto al path para que encuentre app/
+current_dir = Path(__file__).resolve().parent
+parent_dir = current_dir.parent
 sys.path.insert(0, str(parent_dir))
 
 # Importar predictor desde app/
@@ -31,11 +29,17 @@ logger = logging.getLogger(__name__)
 class NotificadorHeladas:
     """
     Clase que gestiona las notificaciones de heladas
-    Integrado con el sistema de predicción ML
+    Integrado con el sistema de predicción ML multi-estación
     """
    
-    def __init__(self):
-        """Inicializa el notificador y el predictor"""
+    def __init__(self, estacion_default="21205790"):
+        """
+        Inicializa el notificador y el predictor
+        
+        Args:
+            estacion_default: Código de la estación para mostrar (default: Madrid/Flores Chibcha)
+        """
+        self.estacion_default = estacion_default
         try:
             self.predictor = PredictorHeladasMulti()
             logger.info("✅ Predictor de heladas inicializado")
@@ -45,7 +49,7 @@ class NotificadorHeladas:
    
     def obtener_prediccion_actual(self):
         """
-        Obtiene la predicción actual de heladas
+        Obtiene la predicción actual de heladas para la estación default
        
         Returns:
             dict: Predicción con temperatura, probabilidad, riesgo, etc.
@@ -54,10 +58,45 @@ class NotificadorHeladas:
             return {"error": "Predictor no disponible"}
        
         try:
-            resultado = self.predictor.predecir()
-            return resultado
+            # Obtener predicción multi-estación
+            resultado_multi = self.predictor.predecir()
+            
+            if "error" in resultado_multi:
+                return {"error": resultado_multi["error"]}
+            
+            # Buscar predicción de la estación default
+            predicciones = resultado_multi.get("predicciones_estaciones", [])
+            
+            if not predicciones:
+                return {"error": "No hay predicciones disponibles"}
+            
+            # Buscar la estación específica
+            pred_estacion = None
+            for pred in predicciones:
+                if pred["codigo"] == self.estacion_default:
+                    pred_estacion = pred
+                    break
+            
+            # Si no se encuentra, usar la primera disponible
+            if pred_estacion is None:
+                pred_estacion = predicciones[0]
+                logger.warning(f"Estación {self.estacion_default} no encontrada, usando {pred_estacion['codigo']}")
+            
+            # Formatear respuesta compatible con el formato anterior
+            return {
+                "temperatura_predicha": pred_estacion["temperatura_predicha"],
+                "probabilidad_helada": pred_estacion["probabilidad_helada"],
+                "riesgo": pred_estacion["riesgo"],
+                "emoji_riesgo": pred_estacion["emoji_riesgo"],
+                "fecha_prediccion": resultado_multi["fecha_prediccion"],
+                "estacion_nombre": pred_estacion["nombre"],
+                "estacion_codigo": pred_estacion["codigo"]
+            }
+            
         except Exception as e:
             logger.error(f"❌ Error al obtener predicción: {e}")
+            import traceback
+            traceback.print_exc()
             return {"error": str(e)}
    
     def necesita_enviar_alerta(self, prediccion):
@@ -74,10 +113,6 @@ class NotificadorHeladas:
             return False, None
        
         temp = prediccion['temperatura_predicha']
-       
-        # Enviar alerta solo si:
-        # - Temperatura <= 0°C (ALTO)
-        # - Temperatura <= 2°C (MEDIO)
        
         if temp <= UMBRALES['alto']: # <= 0°C
             return True, "ALTO"
@@ -101,6 +136,7 @@ class NotificadorHeladas:
         riesgo = prediccion['riesgo']
         emoji = prediccion['emoji_riesgo']
         fecha = prediccion['fecha_prediccion']
+        estacion = prediccion.get('estacion_nombre', 'Madrid, Cundinamarca')
        
         # Convertir fecha a texto legible
         meses_es = {
@@ -109,14 +145,21 @@ class NotificadorHeladas:
             9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
         }
        
-        dia = fecha.day
-        mes = meses_es[fecha.month]
-        anio = fecha.year
+        if hasattr(fecha, 'day'):
+            dia = fecha.day
+            mes = meses_es[fecha.month]
+            anio = fecha.year
+        else:
+            # Si fecha es un datetime.date
+            dia = fecha.day
+            mes = meses_es[fecha.month]
+            anio = fecha.year
+        
         fecha_texto = f"{dia} de {mes} de {anio}"
        
-        # Mensaje base
         mensaje = f"""
-{emoji} **ALERTA DE HELADA - Madrid, Cundinamarca**
+{emoji} **ALERTA DE HELADA**
+📍 **Estación**: {estacion}
 📅 **Fecha**: {fecha_texto}
 🌡️ **Temperatura predicha**: {temp:.1f}°C
 ❄️ **Probabilidad de helada**: {prob:.1f}%
@@ -143,6 +186,7 @@ class NotificadorHeladas:
         riesgo = prediccion['riesgo']
         emoji = prediccion['emoji_riesgo']
         fecha = prediccion['fecha_prediccion']
+        estacion = prediccion.get('estacion_nombre', 'Madrid, Cundinamarca')
        
         # Convertir fecha
         meses_es = {
@@ -151,23 +195,25 @@ class NotificadorHeladas:
             9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
         }
        
-        dia = fecha.day
-        mes = meses_es[fecha.month]
-        anio = fecha.year
+        if hasattr(fecha, 'day'):
+            dia = fecha.day
+            mes = meses_es[fecha.month]
+            anio = fecha.year
+        else:
+            dia = fecha.day
+            mes = meses_es[fecha.month]
+            anio = fecha.year
+            
         fecha_texto = f"{dia} de {mes} de {anio}"
        
         mensaje = f"""
 {emoji} **Predicción de Heladas**
-📍 Madrid, Cundinamarca
+📍 **Estación**: {estacion}
 📅 **Fecha**: {fecha_texto}
 🌡️ **Temperatura predicha**: {temp:.1f}°C
 ❄️ **Probabilidad de helada**: {prob:.1f}%
 🔎 **Nivel de riesgo**: {riesgo}
-📊 **Contexto:**
-• Temperatura ayer: {prediccion['temp_ayer']:.1f}°C
-• Promedio 7 días: {prediccion['temp_promedio_7d']:.1f}°C
-• Mínima 7 días: {prediccion['temp_minima_7d']:.1f}°C
-• Cambio esperado: {prediccion['cambio_esperado']:+.1f}°C
+
 🕐 Actualizado: {datetime.now().strftime('%H:%M:%S')}
 """
        
