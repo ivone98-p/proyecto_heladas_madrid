@@ -27,7 +27,8 @@ except:
 st.set_page_config(
     page_title="SalvaCos - Heladas Madrid",
     page_icon="❄️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"  # Sidebar colapsado para carga más rápida
 )
 
 # CSS personalizado
@@ -48,6 +49,10 @@ st.markdown("""
     }
     [data-testid="stMetricLabel"] {
         font-size: 2.5rem !important;
+    }
+    /* Ajustar solo el nivel de riesgo */
+    div[data-testid="column"]:nth-child(3) [data-testid="stMetricValue"] {
+        font-size: 2.2rem !important;
     }
     header[data-testid="stHeader"] {
         background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
@@ -83,7 +88,7 @@ with col_btn:
 # ============================================================
 # CARGAR GEOMETRÍA DE MADRID
 # ============================================================
-@st.cache_data
+@st.cache_data(show_spinner=False)  # Sin spinner para carga rápida
 def cargar_poligono_madrid():
     """Carga el polígono de Madrid desde el archivo GeoJSON"""
     try:
@@ -136,7 +141,7 @@ except Exception as e:
 # ============================================================
 # CARGAR PREDICTOR (SOLO UNA VEZ)
 # ============================================================
-@st.cache_resource
+@st.cache_resource(show_spinner=False)  # Sin spinner
 def cargar_predictor():
     """Carga el predictor una sola vez"""
     try:
@@ -148,7 +153,7 @@ def cargar_predictor():
 # ============================================================
 # CACHEAR PREDICCIÓN (EVITA RECALCULAR EN CADA CLIC)
 # ============================================================
-@st.cache_data(ttl=3600)  # Cache por 1 hora
+@st.cache_data(ttl=3600, show_spinner=False)  # Sin spinner para carga más rápida
 def obtener_prediccion(_predictor, fecha):
     """Cachea la predicción para evitar recalcular en cada clic del mapa"""
     if _predictor is None:
@@ -326,11 +331,12 @@ if resultado and "predicciones_estaciones" in resultado:
             centro_lat = sum(lats) / len(lats)
             centro_lon = sum(lons) / len(lons)
             
-            # Crear mapa
+            # Crear mapa con satélite híbrido de Google
             mapa = folium.Map(
                 location=[centro_lat, centro_lon],
                 zoom_start=11,
-                tiles='OpenStreetMap'
+                tiles='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+                attr='Google'
             )
             
             # Agregar polígono
@@ -378,74 +384,87 @@ if resultado and "predicciones_estaciones" in resultado:
                     )
                 ).add_to(mapa)
             
-            #  LEYENDA 
+            #  LEYENDA (RESPONSIVE)
             leyenda_html = f"""
-            <div style="position: fixed; bottom: 50px; left: 50px; width: 270px; 
-                        background-color: white; border: 2px solid #2E86C1; border-radius: 10px;
-                        padding: 15px; font-family: Arial; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                        z-index: 9999;">
-                <h4 style="margin: 0 0 10px 0; color: #000000; text-align: center;">Leyenda</h4>
-                <hr style="margin: 10px 0; border: none; border-top: 1px solid #2E86C1;">
+            <div style="position: fixed; bottom: 20px; left: 10px; 
+                        width: 180px; max-width: calc(100vw - 30px);
+                        background-color: white; border: 2px solid #2E86C1; border-radius: 8px;
+                        padding: 10px; font-family: Arial; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                        z-index: 9999; font-size: 11px;">
+                <h4 style="margin: 0 0 6px 0; color: #000000; text-align: center; font-size: 13px;">Leyenda</h4>
+                <hr style="margin: 6px 0; border: none; border-top: 1px solid #2E86C1;">
                 
-                <div style="margin: 8px 0; padding: 8px; background-color: #E3F2FD; border-radius: 5px; border-left: 4px solid #2E86C1;">
-                    <strong style="color: #000000;">🗺️ Límite Municipal</strong><br>
-                    <span style="color: #000000; font-size: 12px;">Madrid, Cundinamarca</span>
+                <div style="margin: 5px 0; padding: 5px; background-color: #E3F2FD; border-radius: 4px; border-left: 3px solid #2E86C1;">
+                    <strong style="color: #000000; font-size: 11px;">🗺️ Límite Municipal</strong><br>
+                    <span style="color: #000000; font-size: 10px;">Madrid, Cundinamarca</span>
                 </div>
                 
-                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                <hr style="margin: 6px 0; border: none; border-top: 1px solid #ccc;">
                 
-                <div style="margin: 8px 0; padding: 8px; background-color: {fillColor_poligono}40; border-radius: 5px; border-left: 4px solid {color_poligono};">
-                    <strong style="color: #000000;">📊 Temperatura Promedio</strong><br>
-                    <span style="color: #000000; font-size: 12px;">
-                        Temp. Promedio: <strong>{temp_promedio:.1f}°C</strong><br>
-                        Riesgo General: <strong>{riesgo_poligono}</strong>
+                <div style="margin: 5px 0; padding: 5px; background-color: {fillColor_poligono}40; border-radius: 4px; border-left: 3px solid {color_poligono};">
+                    <strong style="color: #000000; font-size: 11px;">Temp. Promedio</strong><br>
+                    <span style="color: #000000; font-size: 10px;">
+                        <strong>{temp_promedio:.1f}°C</strong> - {riesgo_poligono}
                     </span>
                 </div>
                 
-                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                <hr style="margin: 6px 0; border: none; border-top: 1px solid #ccc;">
                 
-                <div style="margin: 8px 0;">
-                    <strong style="color: #000000; font-size: 13px;">Escala de Riesgo:</strong>
-                    <div style="margin-top: 8px;">
-                        <div style="display: flex; align-items: center; margin: 4px 0;">
-                            <div style="width: 20px; height: 15px; background-color: #FF0000; border: 1px solid #000; margin-right: 8px;"></div>
-                            <span style="font-size: 11px; color: #000000;">≤ -2°C (MUY ALTO 🔴)</span>
+                <div style="margin: 5px 0;">
+                    <strong style="color: #000000; font-size: 11px;">Escala de Riesgo:</strong>
+                    <div style="margin-top: 5px;">
+                        <div style="display: flex; align-items: center; margin: 3px 0;">
+                            <div style="width: 15px; height: 12px; background-color: #FF0000; border: 1px solid #000; margin-right: 5px;"></div>
+                            <span style="font-size: 9px; color: #000000;">≤-2°C MUY ALTO 🔴</span>
                         </div>
-                        <div style="display: flex; align-items: center; margin: 4px 0;">
-                            <div style="width: 20px; height: 15px; background-color: #FF6347; border: 1px solid #000; margin-right: 8px;"></div>
-                            <span style="font-size: 11px; color: #000000;">-2°C a 0°C (ALTO 🟠)</span>
+                        <div style="display: flex; align-items: center; margin: 3px 0;">
+                            <div style="width: 15px; height: 12px; background-color: #FF6347; border: 1px solid #000; margin-right: 5px;"></div>
+                            <span style="font-size: 9px; color: #000000;">-2 a 0°C ALTO 🟠</span>
                         </div>
-                        <div style="display: flex; align-items: center; margin: 4px 0;">
-                            <div style="width: 20px; height: 15px; background-color: #FFD700; border: 1px solid #000; margin-right: 8px;"></div>
-                            <span style="font-size: 11px; color: #000000;">0°C a 2°C (MEDIO 🟡)</span>
+                        <div style="display: flex; align-items: center; margin: 3px 0;">
+                            <div style="width: 15px; height: 12px; background-color: #FFD700; border: 1px solid #000; margin-right: 5px;"></div>
+                            <span style="font-size: 9px; color: #000000;">0 a 2°C MEDIO 🟡</span>
                         </div>
-                        <div style="display: flex; align-items: center; margin: 4px 0;">
-                            <div style="width: 20px; height: 15px; background-color: #90EE90; border: 1px solid #000; margin-right: 8px;"></div>
-                            <span style="font-size: 11px; color: #000000;">2°C a 4°C (BAJO 🟢)</span>
+                        <div style="display: flex; align-items: center; margin: 3px 0;">
+                            <div style="width: 15px; height: 12px; background-color: #90EE90; border: 1px solid #000; margin-right: 5px;"></div>
+                            <span style="font-size: 9px; color: #000000;">2 a 4°C BAJO 🟢</span>
                         </div>
-                        <div style="display: flex; align-items: center; margin: 4px 0;">
-                            <div style="width: 20px; height: 15px; background-color: #98FB98; border: 1px solid #000; margin-right: 8px;"></div>
-                            <span style="font-size: 11px; color: #000000;">> 4°C (MUY BAJO 🟢)</span>
+                        <div style="display: flex; align-items: center; margin: 3px 0;">
+                            <div style="width: 15px; height: 12px; background-color: #98FB98; border: 1px solid #000; margin-right: 5px;"></div>
+                            <span style="font-size: 9px; color: #000000;">>4°C MUY BAJO 🟢</span>
                         </div>
                     </div>
                 </div>
                 
-                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                <hr style="margin: 6px 0; border: none; border-top: 1px solid #ccc;">
                 
-                <div style="margin: 8px 0;">
-                    <span style="color: #E74C3C; font-size: 18px; margin-right: 8px;">📍</span>
-                    <strong style="color: #000000;">Estaciones Meteorológicas</strong>
+                <div style="margin: 5px 0; display: flex; align-items: center;">
+                    <span style="color: #E74C3C; font-size: 14px; margin-right: 5px;">📍</span>
+                    <strong style="color: #000000; font-size: 10px;">Estaciones</strong>
                 </div>
+                
             </div>
+            <style>
+                @media (min-width: 768px) {{
+                    div[style*="bottom: 20px"] {{
+                        width: 220px;
+                        bottom: 50px;
+                        left: 50px;
+                        padding: 12px;
+                        font-size: 12px;
+                    }}
+                }}
+            </style>
             """
             mapa.get_root().html.add_child(folium.Element(leyenda_html))
             
-            # MOSTRAR MAPA
+            # MOSTRAR MAPA (optimizado para carga rápida)
             mapa_output = st_folium(
                 mapa,
                 width=None,
                 height=600,
-                returned_objects=["last_clicked"]
+                returned_objects=["last_clicked"],
+                key="mapa_heladas"  # Key para evitar re-renders innecesarios
             )
         
         with col_resultados:
@@ -530,11 +549,11 @@ if resultado and "predicciones_estaciones" in resultado:
                             <p style="margin: 6px 0; font-size: 12px; color: #1565C0;">
                                 <strong>Lat:</strong> {res['lat']:.5f} | <strong>Lon:</strong> {res['lon']:.5f}
                             </p>
-                            <p style="margin: 0; font-size: 28px; text-align: center; color: #0D47A1;">
+                            <p style="margin: 0; font-size: 28px; text-align: center; color: #0D47A1;"> Temperatura Mínima: 
                                 <strong>{res['temp']:.2f}°C</strong>
                             </p>
                             <p style="margin: 6px 0; font-size: 15px; text-align: center; color: #1565C0;">
-                                Probabilidad: <strong>{res['prob_helada']:.1f}%</strong>
+                                Probabilidad helada: <strong>{res['prob_helada']:.1f}%</strong>
                             </p>
                             <p style="margin: 6px 0; font-size: 15px; text-align: center; color: #1565C0;">
                                 <strong>{res['riesgo']}</strong>
