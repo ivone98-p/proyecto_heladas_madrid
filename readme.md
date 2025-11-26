@@ -372,7 +372,6 @@ elif temp_predicha <= 2:
 ### Funcionalidades
 
 **Suscripción Automática**
-- Los usuarios reciben alertas diarias a las 6:00 PM
 - Solo se envían alertas cuando hay riesgo de helada
 
 **Comandos Disponibles**
@@ -411,7 +410,6 @@ Los datos deben actualizarse periódicamente:
 
 - Predicción a 3-5 días
 - Integración con más estaciones del departamento
-- API REST pública para desarrolladores
 - Alertas por WhatsApp
 - Dashboard de métricas históricas de aciertos
 - Exportar reportes de predicción en PDF
@@ -441,10 +439,7 @@ Bogotá, Colombia
 ## Agradecimientos
 
 - **IDEAM** - Por proporcionar los datos meteorológicos históricos de calidad
-- **Agricultores de Madrid, Cundinamarca** - Por el feedback valioso durante el desarrollo
 - **Universidad Distrital Francisco José de Caldas** - Por el apoyo académico y técnico
-- **Comunidad de Streamlit** - Por la excelente documentación y soporte
-- **Alcaldía de Madrid, Cundinamarca** - Por el apoyo en la difusión del sistema
 
 ---
 
