@@ -146,8 +146,6 @@ Datos/datos_imputados/validacion_cruzada_plot_INTEGRAL_v1.png
 Datos/datos_imputados/validacion_cruzada_reporte_INTEGRAL_v1.csv
 
 
-# IMPORTANTE: Los archivos en datos_imputados/ y modelos_entrenados/ 
-# SÍ deben subirse porque son necesarios para producción
 
 # ============================================================
 # ARCHIVOS DE TESTING
