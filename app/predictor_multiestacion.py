@@ -301,8 +301,8 @@ class PredictorHeladasMulti:
 
         print("🔄 Calculando nueva predicción...")
 
-        df_hoy = self.df[self.df['Fecha'] <= fecha_consulta].copy()
-        
+        fecha_limite = fecha_consulta - timedelta(days=1)
+        df_hoy = self.df[self.df['Fecha'] <= fecha_limite].copy()
         if len(df_hoy) < 100:
             return {"error": "Datos insuficientes"}
 
@@ -433,8 +433,8 @@ class PredictorHeladasMulti:
         print(f"✅ Total: {len(predicciones)} estaciones")
         
         resultado = {
-            "fecha_consulta": fecha_consulta.date(),
-            "fecha_prediccion": (fecha_consulta + timedelta(days=1)).date(),
+            "fecha_consulta": fecha_limite.date(),
+            "fecha_prediccion": fecha_consulta.date(),
             "predicciones_estaciones": predicciones
         }
         

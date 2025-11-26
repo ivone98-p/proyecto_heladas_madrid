@@ -10,9 +10,13 @@ import locale
 import json
 import sys
 from pathlib import Path
+import pytz
 
 # ✅ CRÍTICO: Agregar rutas correctas
 sys.path.insert(0, str(Path(__file__).parent))
+
+# Configurar timezone de Colombia
+TIMEZONE_COL = pytz.timezone('America/Bogota')
 
 # Configurar locale
 try:
@@ -172,9 +176,11 @@ if PREDICTOR_DISPONIBLE:
     predictor = cargar_predictor()
     
     if predictor is not None:
-        # Usar fecha como parámetro para el cache
-        fecha_hoy = datetime.now().date()
-        resultado = obtener_prediccion(predictor, fecha_hoy)
+        # Obtener fecha actual en Colombia y calcular mañana
+        ahora_colombia = datetime.now(TIMEZONE_COL)
+        fecha_manana = ahora_colombia.date() + timedelta(days=1)
+        
+        resultado = obtener_prediccion(predictor, fecha_manana)
             
         if resultado and "error" in resultado:
             st.error(f"❌ {resultado['error']}")
@@ -210,7 +216,10 @@ else:
 # MÉTRICAS PRINCIPALES
 # ============================================================
 if resultado:
-    st.subheader(f"Predicción para Mañana ({resultado['fecha_prediccion'].strftime('%d/%m/%Y')})")
+    # Usar la fecha que calculamos nosotros, no la del resultado
+    ahora_colombia = datetime.now(TIMEZONE_COL)
+    fecha_manana_display = ahora_colombia.date() + timedelta(days=1)
+    st.subheader(f"Predicción para Mañana ({fecha_manana_display.strftime('%d/%m/%Y')})")
 else:
     st.subheader("Predicción para Mañana")
 
@@ -274,7 +283,9 @@ if resultado:
         9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
     }
     
-    fecha_pred = resultado['fecha_prediccion']
+    # Usar la fecha que calculamos nosotros
+    ahora_colombia = datetime.now(TIMEZONE_COL)
+    fecha_pred = ahora_colombia.date() + timedelta(days=1)
     fecha_prediccion_str = f"{fecha_pred.day} de {meses_es[fecha_pred.month]} de {fecha_pred.year}"
     
     if temp_predicha <= 0:
@@ -402,7 +413,7 @@ if resultado and "predicciones_estaciones" in resultado:
                 <hr style="margin: 6px 0; border: none; border-top: 1px solid #ccc;">
                 
                 <div style="margin: 5px 0; padding: 5px; background-color: {fillColor_poligono}40; border-radius: 4px; border-left: 3px solid {color_poligono};">
-                    <strong style="color: #000000; font-size: 11px;">Temp. Promedio</strong><br>
+                    <strong style="color: #000000; font-size: 11px;">📊 Temp. Promedio</strong><br>
                     <span style="color: #000000; font-size: 10px;">
                         <strong>{temp_promedio:.1f}°C</strong> - {riesgo_poligono}
                     </span>
@@ -549,11 +560,11 @@ if resultado and "predicciones_estaciones" in resultado:
                             <p style="margin: 6px 0; font-size: 12px; color: #1565C0;">
                                 <strong>Lat:</strong> {res['lat']:.5f} | <strong>Lon:</strong> {res['lon']:.5f}
                             </p>
-                            <p style="margin: 0; font-size: 28px; text-align: center; color: #0D47A1;"> Temperatura Mínima: 
+                            <p style="margin: 0; font-size: 28px; text-align: center; color: #0D47A1;">
                                 <strong>{res['temp']:.2f}°C</strong>
                             </p>
                             <p style="margin: 6px 0; font-size: 15px; text-align: center; color: #1565C0;">
-                                Probabilidad helada: <strong>{res['prob_helada']:.1f}%</strong>
+                                Probabilidad: <strong>{res['prob_helada']:.1f}%</strong>
                             </p>
                             <p style="margin: 6px 0; font-size: 15px; text-align: center; color: #1565C0;">
                                 <strong>{res['riesgo']}</strong>
@@ -580,4 +591,4 @@ st.info("""
 - Interpolación espacial: IDW (Inverse Distance Weighting)
 """)
 
-st.caption(f"🕐 Última actualización: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+st.caption(f"🕐 Última actualización: {datetime.now(TIMEZONE_COL).strftime('%Y-%m-%d %H:%M:%S %Z')}")
